@@ -16,7 +16,7 @@ class EncoderReader(object):
 
     def update_encoder_r(self, channel):
         self.counter_r = self.counter_r + 1
-        print "Encoder (right) counter updated: %d" % self.ounter_r
+        print "Encoder (right) counter updated: %d" % self.counter_r
 
     def run(self):
         GPIO.add_event_detect(config.Or, GPIO.RISING,
