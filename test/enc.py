@@ -1,30 +1,34 @@
 import Adafruit_BBIO.GPIO as GPIO
 import config
 
-counter_l = 0
-counter_r = 0
 
-def update_encoder_l(channel):
-    global counter_l
-    counter_l = counter_l + 1
-    print "Encoder (left) counter updated: %d" % counter_l
+class EncoderReader(object):
+    counter_l = 0
+    counter_r = 0
 
+    def __init__(self):
+        GPIO.setup(config.Ol, GPIO.IN)
+        GPIO.setup(config.Or, GPIO.IN)
 
-def update_encoder_r(channel):
-    global counter_r
-    counter_r = counter_r + 1
-    print "Encoder (right) counter updated: %d" % counter_r
+    def update_encoder_l(self, channel):
+        self.counter_l = self.counter_l + 1
+        print "Encoder (left) counter updated: %d" % self.counter_l
 
+    def update_encoder_r(self, channel):
+        self.counter_r = self.counter_r + 1
+        print "Encoder (right) counter updated: %d" % self.ounter_r
 
-GPIO.setup(config.Ol, GPIO.IN)
-GPIO.add_event_detect(config.Ol, GPIO.RISING, callback=update_encoder_l)
-
-GPIO.setup(config.Or, GPIO.IN)
-GPIO.add_event_detect(config.Or, GPIO.RISING, callback=update_encoder_r)
+    def run(self):
+        GPIO.add_event_detect(config.Or, GPIO.RISING,
+                              callback=self.update_encoder_r)
+        GPIO.add_event_detect(config.Ol, GPIO.RISING,
+                              callback=self.update_encoder_l)
+        while True:
+            pass
 
 try:
-    while True:
-        pass
+    enc = EncoderReader()
+    enc.run()
 
 except KeyboardInterrupt:
     GPIO.cleanup()
