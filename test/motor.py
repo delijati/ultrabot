@@ -60,7 +60,7 @@ if __name__ == '__main__':
     print '====== Testing ultrabot ======='
     print '\nLeft motor should follow commands\n'
 
-    with motor_setup(*config.LEFT_MOTOR_PINS) as run:
+    with motor_setup(*config.LMP) as run:
 
         print 'Left motor: Run forward'
         for i in range(1, 11):
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     print '\nRight motor should follow commands\n'
 
-    with motor_setup(*config.RIGHT_MOTOR_PINS) as run:
+    with motor_setup(*config.RMP) as run:
         print 'Right motor: Run forward'
         for i in range(1, 11):
             run(i*10)
