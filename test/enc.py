@@ -15,10 +15,14 @@ ENC_POS = [0, 0]
 class EncoderReader(object):
     counter_l = 0
     counter_r = 0
+    _stop = False
 
     def __init__(self):
         GPIO.setup(config.Ol, GPIO.IN)
         GPIO.setup(config.Or, GPIO.IN)
+
+    def stop(self):
+        self._stop = True
 
     def update_encoder_l(self, channel):
         global ENC_POS
@@ -39,7 +43,8 @@ class EncoderReader(object):
                               callback=self.update_encoder_l)
         current_time_l = time.time()
         current_time_r = time.time()
-        while True:
+
+        while True and not self._stop:
             if (time.time() >= current_time_l + time_interval):
                 velocity_l = (
                     self.counter_l * (wheel_radius * const)
@@ -56,11 +61,11 @@ class EncoderReader(object):
                 current_time_r = time.time()
                 print "velocity_r %s cm/s ticks sum %s" % (velocity_r,
                                                            ENC_POS[RIGHT])
+if __name__ == '__main__':
+    try:
+        enc = EncoderReader()
+        enc.run()
 
-try:
-    enc = EncoderReader()
-    enc.run()
-
-except KeyboardInterrupt:
+    except KeyboardInterrupt:
+        GPIO.cleanup()
     GPIO.cleanup()
-GPIO.cleanup()

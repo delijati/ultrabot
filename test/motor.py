@@ -21,7 +21,7 @@ import Adafruit_BBIO.PWM as PWM
 import Adafruit_BBIO.ADC as ADC
 
 @contextlib.contextmanager
-def motor_setup(dir1_pin, dir2_pin, pwm_pin):
+def motor_setup(dir1_pin, dir2_pin, pwm_pin, cleanup=True):
     """
     Sets up context for operating a motor.
     """
@@ -30,7 +30,8 @@ def motor_setup(dir1_pin, dir2_pin, pwm_pin):
     GPIO.setup(dir2_pin, GPIO.OUT)
 
     # Initialize PWM pins: PWM.start(channel, duty, freq=2000, polarity=0)
-    PWM.start(pwm_pin, 0, frequency=100)
+    # we can't set frequncy if we work with two pwms
+    PWM.start(pwm_pin, 0)#, frequency=100)
 
     def run_motor(speed):
         if speed > 100:
@@ -53,8 +54,9 @@ def motor_setup(dir1_pin, dir2_pin, pwm_pin):
 
     yield run_motor
 
-    GPIO.cleanup()
-    PWM.cleanup()
+    if cleanup:
+        GPIO.cleanup()
+        PWM.cleanup()
 
 if __name__ == '__main__':
     print '====== Testing ultrabot ======='
