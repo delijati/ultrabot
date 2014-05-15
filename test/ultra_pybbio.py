@@ -1,7 +1,13 @@
 import time
-import Adafruit_BBIO.GPIO as GPIO
-import config
+import bbio
 import numpy as np
+
+
+ULTRAS = ((bbio.GPIO1_12, bbio.GPIO1_13),
+          (bbio.GPIO0_3, bbio.GPIO0_2),
+          (bbio.GPIO1_17, bbio.GPIO0_15),
+          (bbio.GPIO3_21, bbio.GPIO0_14),
+          (bbio.GPIO3_19, bbio.GPIO3_16),)
 
 # trigger duration
 DECPULSETRIGGER = 0.0001
@@ -11,21 +17,21 @@ INTTIMEOUT = 2100
 
 def setup():
     print "setup..."
-    for trigger, echo in config.ULTRAS:
-        GPIO.setup(echo, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(trigger, GPIO.OUT)
-        GPIO.output(trigger, False)
+    for trigger, echo in ULTRAS:
+        bbio.pinMode(echo, bbio.INPUT)
+        bbio.pinMode(trigger, bbio.OUTPUT)
+        bbio.digitalWrite(trigger, bbio.LOW)
 
 
 def measure(trigger, echo):
-    GPIO.output(trigger, True)
+    bbio.digitalWrite(trigger, bbio.HIGH)
     time.sleep(DECPULSETRIGGER)
-    GPIO.output(trigger, False)
+    bbio.digitalWrite(trigger, bbio.LOW)
 
     # Wait for echo to go high (or timeout)
     intcountdown = INTTIMEOUT
 
-    while (GPIO.input(echo) == 0 and intcountdown > 0):
+    while (bbio.digitalRead(echo) == 0 and intcountdown > 0):
         intcountdown = intcountdown - 1
 
     # If echo is high
@@ -36,7 +42,7 @@ def measure(trigger, echo):
         intcountdown = INTTIMEOUT
 
         # Wait for echo to go low (or timeout)
-        while (GPIO.input(echo) == 1 and intcountdown > 0):
+        while (bbio.digitalRead(echo) == 1 and intcountdown > 0):
             intcountdown = intcountdown - 1
 
         # Stop timer
@@ -48,14 +54,13 @@ def measure(trigger, echo):
         return intdistance
 
 
-try:
+def loop():
     print "running..."
-    setup()
     data = [[], [], [], [], []]
     count = 10
     for i in range(count):
         i = 0
-        for trigger, echo in config.ULTRAS:
+        for trigger, echo in ULTRAS:
             dist = measure(trigger, echo)
             data[i].append(dist)
             i += 1
@@ -64,7 +69,6 @@ try:
         mean = np.mean(i)
         print "%s: mean %.2f cm min: %.2f cm max: %.2f cm diff: %.2f cm" % (
             sen[idx], mean, min(i), max(i), max(i) - min(i))
+    bbio.stop()
 
-except KeyboardInterrupt:
-    GPIO.cleanup()
-GPIO.cleanup()
+bbio.run(setup, loop)
